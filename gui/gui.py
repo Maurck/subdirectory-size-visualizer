@@ -28,6 +28,7 @@ class GUI:
         )
 
         entry.grid(row=row, column=column, padx = padx, pady = pady)
+        return entry
 
     def create_button(self, func, name, height=2, width=15, row=0, column=1, master=None, padx=5, pady=5):
 
