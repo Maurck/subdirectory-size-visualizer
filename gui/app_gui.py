@@ -53,6 +53,7 @@ class AppGUI(GUI):
 
         # Next Directory Entry
         self.next_directory_entry = AppEntry(self.options_frame, 0, 1, '', width=20)
+        self.next_directory_entry.bind('<Return>',self.next_pie)
 
         # Next Directory button
         self.next_directory_button = AppButton(self.options_frame, 0, 2, 'Ir', lambda: self.next_pie(), padx=30)
@@ -65,18 +66,20 @@ class AppGUI(GUI):
 
         # Filter Entry
         self.filter_entry = AppEntry(self.options_frame, 2, 1)
+        self.filter_entry.bind('<Return>',self.actualize_pie)
 
         # Actualize Button
-        self.actualize_button = AppButton(self.options_frame, 2, 2, 'Actualizar', lambda: self.actualize_pie(self.filter_entry.get()))
+        self.actualize_button = AppButton(self.options_frame, 2, 2, 'Actualizar', lambda: self.actualize_pie())
 
         # Jump to directory Label
         self.jump_label = AppLabel(self.options_frame, 3, 0, 'Saltar a directorio: ', width=25)
 
         # Jump Entry
         self.jump_entry = AppEntry(self.options_frame, 3, 1, width=20)
+        self.jump_entry.bind('<Return>',self.jump_to_directory)
 
         # Jump Button 
-        self.jump_button = AppButton(self.options_frame, 3, 2, 'Saltar', lambda: self.jump_to_directory(self.jump_entry.get()))
+        self.jump_button = AppButton(self.options_frame, 3, 2, 'Saltar', lambda: self.jump_to_directory())
 
     def create_info_frame(self):
         self.info_frame = AppFrame(self.elements_frame, 1, 0)
@@ -97,7 +100,7 @@ class AppGUI(GUI):
         self.previous_folder_path.append(self.current_folder_path)
 
     @exception_to_info_handler
-    def next_pie(self):
+    def next_pie(self, event):
         if self.next_directory_entry.get() == '':
             raise Exception('Ingrese una ruta')
         try:
@@ -118,7 +121,9 @@ class AppGUI(GUI):
             raise Exception('No hay carpetas anteriores')
 
     @exception_to_info_handler
-    def actualize_pie(self, min_size_mb):
+    def actualize_pie(self, event):
+
+        min_size_mb = self.filter_entry.get()
 
         try:
             integer_min_size_mb = int(min_size_mb)
@@ -132,15 +137,17 @@ class AppGUI(GUI):
         self.directory_pie_canvas.plot(folder_path=self.current_folder_path, min_size_mb=self.current_min_size_mb)
 
     @exception_to_info_handler
-    def jump_to_directory(self, folder_path):
+    def jump_to_directory(self, event):
 
-        if self.jump_entry.get() == '':
+        new_folder_path = self.jump_entry.get()
+
+        if new_folder_path == '':
             raise Exception('Ingrese una ruta')
 
         try:
-            self.directory_pie_canvas.plot(folder_path=folder_path, min_size_mb=self.current_min_size_mb)
+            self.directory_pie_canvas.plot(folder_path=new_folder_path, min_size_mb=self.current_min_size_mb)
 
             self.set_previous_folder_path()
-            self.current_folder_path=folder_path
+            self.current_folder_path=new_folder_path
         except:
-            raise Exception(f'La ruta "{self.jump_entry.get()}" no es válida')
+            raise Exception(f'La ruta "{new_folder_path}" no es válida')
