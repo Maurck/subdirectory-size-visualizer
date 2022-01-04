@@ -102,18 +102,28 @@ class AppGUI(GUI):
         if self.jump_entry.get() == '':
             raise Exception('Ingrese una ruta')
 
-        self.set_previous_folder_path()
-        self.current_folder_path=folder_path
-        
-        self.directory_pie_canvas.plot(folder_path=folder_path, min_size_mb=self.current_min_size_mb)
+        try:
+            self.directory_pie_canvas.plot(folder_path=folder_path, min_size_mb=self.current_min_size_mb)
+
+            self.set_previous_folder_path()
+            self.current_folder_path=folder_path
+        except:
+            raise Exception('La ruta ingresada no es válida')
 
     @exception_to_info_handler
     def actualize_pie(self, min_size_mb):
-        if int(min_size_mb) < 0:
+
+        try:
+            integer_min_size_mb = int(min_size_mb)
+        except:
+            raise Exception('El tamaño en MB debe ser un numero')
+
+        if int(integer_min_size_mb) < 0:
             raise Exception('El tamaño en MB debe ser positivo')
-        
+
         self.current_min_size_mb=int(min_size_mb)
         self.directory_pie_canvas.plot(folder_path=self.current_folder_path, min_size_mb=self.current_min_size_mb)
+
 
     @exception_to_info_handler
     def return_pie(self):
@@ -126,8 +136,10 @@ class AppGUI(GUI):
     def next_pie(self):
         if self.next_directory_entry.get() == '':
             raise Exception('Ingrese una ruta')
-
-        next_folder_path = f'{self.current_folder_path}\{self.next_directory_entry.get()}'
-        self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
-        self.set_previous_folder_path()
-        self.set_current_folder_path(next_folder_path)
+        try:
+            next_folder_path = f'{self.current_folder_path}\{self.next_directory_entry.get()}'
+            self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
+            self.set_previous_folder_path()
+            self.set_current_folder_path(next_folder_path)
+        except:
+            raise Exception('La ruta ingresada no es valida')
