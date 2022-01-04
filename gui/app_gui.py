@@ -33,7 +33,6 @@ class AppGUI(GUI):
         self.default_folder_path = default_folder_path
         self.current_folder_path = self.default_folder_path
         self.previous_folder_path = []
-        self.previous_folder_path.append(self.current_folder_path)
         self.current_min_size_mb = current_min_size_mb
 
     def create_pie_frame(self):
@@ -98,17 +97,25 @@ class AppGUI(GUI):
         self.previous_folder_path.append(self.current_folder_path)
 
     @exception_to_info_handler
-    def jump_to_directory(self, folder_path):
-        if self.jump_entry.get() == '':
+    def next_pie(self):
+        if self.next_directory_entry.get() == '':
             raise Exception('Ingrese una ruta')
-
         try:
-            self.directory_pie_canvas.plot(folder_path=folder_path, min_size_mb=self.current_min_size_mb)
-
+            next_folder_path = f'{self.current_folder_path}\{self.next_directory_entry.get()}'
+            self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
             self.set_previous_folder_path()
-            self.current_folder_path=folder_path
+            self.set_current_folder_path(next_folder_path)
         except:
-            raise Exception('La ruta ingresada no es válida')
+            raise Exception(f'La carpeta "{self.next_directory_entry.get()}" no forma parte del subdirectorio actual')
+
+    @exception_to_info_handler
+    def return_pie(self):
+        if len(self.previous_folder_path) > 0:
+            next_folder_path = self.previous_folder_path.pop()
+            self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
+            self.set_current_folder_path(next_folder_path)
+        else:
+            raise Exception('No hay carpetas anteriores')
 
     @exception_to_info_handler
     def actualize_pie(self, min_size_mb):
@@ -125,20 +132,15 @@ class AppGUI(GUI):
         self.directory_pie_canvas.plot(folder_path=self.current_folder_path, min_size_mb=self.current_min_size_mb)
 
     @exception_to_info_handler
-    def return_pie(self):
-        if len(self.previous_folder_path) > 0:
-            next_folder_path = self.previous_folder_path.pop()
-            self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
-            self.set_current_folder_path(next_folder_path)
+    def jump_to_directory(self, folder_path):
 
-    @exception_to_info_handler
-    def next_pie(self):
-        if self.next_directory_entry.get() == '':
+        if self.jump_entry.get() == '':
             raise Exception('Ingrese una ruta')
+
         try:
-            next_folder_path = f'{self.current_folder_path}\{self.next_directory_entry.get()}'
-            self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
+            self.directory_pie_canvas.plot(folder_path=folder_path, min_size_mb=self.current_min_size_mb)
+
             self.set_previous_folder_path()
-            self.set_current_folder_path(next_folder_path)
+            self.current_folder_path=folder_path
         except:
-            raise Exception('La ruta ingresada no es valida')
+            raise Exception(f'La ruta "{self.jump_entry.get()}" no es válida')
