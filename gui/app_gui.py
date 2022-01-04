@@ -1,20 +1,32 @@
-import tkinter as tk
-from tkinter import * 
-
 from gui.gui import GUI
-from gui.pie.directory_pie_canvas import DirectoryPieCanvas
+from gui.app_button import AppButton
+from gui.app_directory_pie_canvas import AppDirectoryPieCanvas
+from gui.app_entry import AppEntry
+from gui.app_frame import AppFrame
+from gui.app_info_box import AppInfoBox
+from gui.app_label import AppLabel
+from exceptions.app_exception_handler import exception_to_info_handler
 
 class AppGUI(GUI):
-    def __init__(self, title="Aplicación", dimensions="1300x600", default_folder_path = r'C:\Program Files (x86)', current_min_size_mb=500):
+    def __init__(self, title="Aplicación", dimensions="1400x600", default_folder_path = r'C:\Program Files (x86)', current_min_size_mb=500):
         super().__init__(title=title, dimensions=dimensions)
         
         self.set_variables(default_folder_path, current_min_size_mb)
 
-        self.create_pie_canvas()
+        # Elementos: Pie, opciones
         self.create_elements_frame()
+
+        # Pie
+        self.create_pie_frame()
+        self.create_directory_pie_canvas()
+
+        # Opciones
         self.create_options_frame()
+        self.create_options_elements()
+
+        # Info
         self.create_info_frame()
-        self.create_elements()
+        self.create_info_elements()
 
 
     def set_variables(self, default_folder_path, current_min_size_mb):
@@ -24,154 +36,60 @@ class AppGUI(GUI):
         self.previous_folder_path.append(self.current_folder_path)
         self.current_min_size_mb = current_min_size_mb
 
+    def create_pie_frame(self):
+        self.pie_frame = AppFrame(self.window, 0, 0)
+
+    def create_directory_pie_canvas(self):
+        self.directory_pie_canvas = AppDirectoryPieCanvas(self.pie_frame, 0, 0)
+
     def create_elements_frame(self):
-        self.elements_frame = Frame(self.window)
-        self.elements_frame.grid(row=0, column=1, sticky=tk.N)
+        self.elements_frame = AppFrame(self.window, 0, 1)
 
     def create_options_frame(self):
-        self.options_frame = Frame(self.elements_frame)
-        self.options_frame.grid(row=0, column=0, sticky=tk.N)
+        self.options_frame = AppFrame(self.elements_frame, 0, 0)
 
-    def create_info_frame(self):
-        self.info_frame = Frame(self.elements_frame)
-        self.info_frame.grid(row=1, column=0, sticky=tk.N)
-
-    def create_pie_canvas(self):
-        #pie frame
-        self.pie_frame = Frame(self.window)
-        self.pie_frame.grid(row=0, column=0)
-        #directory canvas
-        self.directory_pie_canvas = self.create_directory_pie_canvas(
-            self.pie_frame,
-            row=0,
-            column=0, 
-            folder_path=r'C:\Program Files (x86)', 
-            min_size_mb=500
-        )
-
-    def create_elements(self):
-        
+    def create_options_elements(self): 
         # Next Directory Label
-        self.next_directory_label = self.create_label(
-            master=self.options_frame,
-            text=f'Ingrese Siguiente Directorio:',
-            width=25,
-            row=0, 
-            column=0,
-        )
+        self.next_directory_label = AppLabel(self.options_frame, 0, 0, 'Ingrese siguiente carpeta:', width=25)
 
         # Next Directory Entry
-        self.next_directory_entry = self.create_entry(
-            master=self.options_frame,
-            text=f'', 
-            width=20,
-            row=0, 
-            column=1
-        )
+        self.next_directory_entry = AppEntry(self.options_frame, 0, 1, '', width=20)
 
         # Next Directory button
-        self.next_directory_button = self.create_button(
-            lambda: self.next_pie(),
-            name="Ir",
-            master=self.options_frame,
-            row=0,
-            column=2,
-            padx=30
-        )
+        self.next_directory_button = AppButton(self.options_frame, 0, 2, 'Ir', lambda: self.next_pie(), padx=30)
 
         # Return button
-        self.return_button = self.create_button(
-            lambda: self.return_pie(),
-            name="Volver",
-            row=1,
-            column=1,
-            master=self.options_frame
-        )
+        self.return_button = AppButton(self.options_frame, 1, 1, 'Volver', lambda: self.return_pie())
 
         # Filter label
-        self.filter_label = self.create_label(
-            text="Tamaño minimo a filtrar (MB): ",
-            width=25,
-            row=2,
-            column=0,
-            master=self.options_frame
-        )
+        self.filter_label = AppLabel(self.options_frame, 2, 0, 'Tamaño minimo a filtrar (MB): ', width=25)
+
         # Filter Entry
-        self.filter_entry = self.create_entry(
-            text='',
-            master=self.options_frame,
-            row=2,
-            column=1
-        )
-        # Actualize 
-        self.actualize_button = self.create_button(
-            lambda: self.actualize_pie(self.filter_entry.get()),
-            name="Actualizar",
-            master=self.options_frame,
-            row=2, 
-            column=2
-        )
-        # Jump to directory
-        self.jump_label = self.create_label(
-            text="Saltar a directorio: ",
-            width=25,
-            row=3,
-            column=0,
-            master=self.options_frame
-        )
+        self.filter_entry = AppEntry(self.options_frame, 2, 1)
+
+        # Actualize Button
+        self.actualize_button = AppButton(self.options_frame, 2, 2, 'Actualizar', lambda: self.actualize_pie(self.filter_entry.get()))
+
+        # Jump to directory Label
+        self.jump_label = AppLabel(self.options_frame, 3, 0, 'Saltar a directorio: ', width=25)
+
         # Jump Entry
-        self.jump_entry = self.create_entry(
-            text='',
-            master=self.options_frame,
-            row=3,
-            width=20,
-            column=1
-        )
-        # Actualize 
-        self.jump_button = self.create_button(
-            lambda: self.jump_to_directory(self.jump_entry.get()),
-            name="Saltar",
-            master=self.options_frame,
-            row=3, 
-            column=2
-        )
+        self.jump_entry = AppEntry(self.options_frame, 3, 1, width=20)
 
+        # Jump Button 
+        self.jump_button = AppButton(self.options_frame, 3, 2, 'Saltar', lambda: self.jump_to_directory(self.jump_entry.get()))
+
+    def create_info_frame(self):
+        self.info_frame = AppFrame(self.elements_frame, 1, 0)
+
+    def create_info_elements(self):
         # Info Label
-        self.info_label = self.create_label(
-            text="Logs: ",
-            width=25,
-            row=0,
-            column=0,
-            pady=10,
-            master=self.info_frame
-        )
+        self.info_label = AppLabel(self.info_frame, 0, 0, 'Logs: ', width=25, pady=10)
+
         # Info Text
-        self.info_text = self.create_text(
-            master=self.info_frame,
-            width=50,
-            height=14,
-            row=1,
-            column=0
-        )
+        self.info_box = AppInfoBox(self.info_frame, 1, 0, width=50, height=14)
 
-    def create_directory_pie_canvas(self, master, row=0, column=0, folder_path=r'C:\Program Files (x86)', min_size_mb=500):
-
-        directory_pie_canvas = DirectoryPieCanvas(
-            master = master
-        )
-
-        directory_pie_canvas.plot(row=row, column=column, min_size_mb=min_size_mb, folder_path=folder_path)
-
-        return directory_pie_canvas
-
-
-    def exception_to_info_handler(func):
-        def inner_function(*args, **kwargs):
-            try:
-                func(*args, **kwargs)
-            except Exception as e:
-                args[0].write_info(e)
-        return inner_function
+    # Refactorizar
 
     def set_current_folder_path(self, folder_path):
         self.current_folder_path = folder_path
@@ -181,6 +99,9 @@ class AppGUI(GUI):
 
     @exception_to_info_handler
     def jump_to_directory(self, folder_path):
+        if self.jump_entry.get() == '':
+            raise Exception('Ingrese una ruta')
+
         self.set_previous_folder_path()
         self.current_folder_path=folder_path
         
@@ -210,9 +131,3 @@ class AppGUI(GUI):
         self.directory_pie_canvas.plot(folder_path=next_folder_path, min_size_mb=self.current_min_size_mb)
         self.set_previous_folder_path()
         self.set_current_folder_path(next_folder_path)
-
-    def write_info(self, text):
-        self.info_text.configure(state='normal')
-        self.info_text.delete('1.0', END)
-        self.info_text.insert(INSERT, text)
-        self.info_text.configure(state='disabled')

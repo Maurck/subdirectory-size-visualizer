@@ -4,7 +4,7 @@ import matplotlib.figure
 
 class PieCanvas(FigureCanvasTkAgg):
     def __init__(self, master=None):
-        self.fig = matplotlib.figure.Figure((8,6))
+        self.fig = matplotlib.figure.Figure((9,6))
         super().__init__(self.fig, master=master)
         self.ax = self.fig.add_subplot(111)
 
@@ -17,7 +17,16 @@ class PieCanvas(FigureCanvasTkAgg):
         )
 
         self.ax.clear()
-        self.ax.pie(data, labels=labels) 
+
+        patches, texts, autotexts = self.ax.pie(data, labels=labels, autopct='%1.1f%%') 
+
+        for text in texts:
+            label = text.get_text().split(':')[0]
+            label_size = len(label)
+            if label_size > 10:
+                new_font_size = 10 - (label_size/10)
+                text.set_fontsize(new_font_size)
+
         self.ax.set_title(title)
 
         self.draw()
