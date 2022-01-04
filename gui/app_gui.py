@@ -124,7 +124,6 @@ class AppGUI(GUI):
         self.current_min_size_mb=int(min_size_mb)
         self.directory_pie_canvas.plot(folder_path=self.current_folder_path, min_size_mb=self.current_min_size_mb)
 
-
     @exception_to_info_handler
     def return_pie(self):
         if len(self.previous_folder_path) > 0:
