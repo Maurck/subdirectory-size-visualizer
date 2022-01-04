@@ -100,7 +100,7 @@ class AppGUI(GUI):
         self.previous_folder_path.append(self.current_folder_path)
 
     @exception_to_info_handler
-    def next_pie(self, event):
+    def next_pie(self, event=None):
         if self.next_directory_entry.get() == '':
             raise Exception('Ingrese una ruta')
         try:
@@ -121,7 +121,7 @@ class AppGUI(GUI):
             raise Exception('No hay carpetas anteriores')
 
     @exception_to_info_handler
-    def actualize_pie(self, event):
+    def actualize_pie(self, event=None):
 
         min_size_mb = self.filter_entry.get()
 
@@ -137,7 +137,7 @@ class AppGUI(GUI):
         self.directory_pie_canvas.plot(folder_path=self.current_folder_path, min_size_mb=self.current_min_size_mb)
 
     @exception_to_info_handler
-    def jump_to_directory(self, event):
+    def jump_to_directory(self, event=None):
 
         new_folder_path = self.jump_entry.get()
 
