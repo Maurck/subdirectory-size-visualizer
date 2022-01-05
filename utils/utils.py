@@ -1,4 +1,6 @@
 import os
+import concurrent.futures
+from itertools import repeat
 
 def get_directory_size(directory):
     """Returns the `directory` size in bytes."""
@@ -33,29 +35,37 @@ def get_size_format(b, factor=1024, suffix="B"):
         b /= factor
     return f"{b:.2f} Y{suffix}"
 
+def get_directory_data(directory, min_size_mb):
+    directory_size = get_directory_size(directory)
+    directory_name = os.path.basename(directory) + ": " + get_size_format(directory_size)
+
+    if directory_size <= 0:
+        return
+
+    if directory_size / (1024.0 * 1024.0) < min_size_mb:
+        return (directory_size, directory_name, False)   
+
+    return (directory_size, directory_name, True)
+
 def get_directories_data(folder_path=r'C:\Program Files (x86)', min_size_mb=500):
 
     others_size = 0
     directory_sizes = []
-    names = []
-    # iterate over all the directories inside this path
-    for directory in os.listdir(folder_path):
-        directory = os.path.join(folder_path, directory)
-        # get the size of this directory (folder)
-        directory_size = get_directory_size(directory)
+    directory_names = []
 
-        if directory_size <= 0:
-            continue
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        listdir = os.listdir(folder_path)
+        directories = [os.path.join(folder_path, directory) for directory in listdir]
+        results = executor.map(get_directory_data, directories, repeat(min_size_mb))
+    
+    results_list = [result for result in results if result is not None]
 
-        if directory_size / (1024.0 * 1024.0) < min_size_mb:
-            others_size+=directory_size
-            continue
-        
-        #print(f"{os.path.basename(directory)} : {get_size_format(directory_size)}")
-        directory_sizes.append(directory_size)
-        names.append(os.path.basename(directory) + ": " + get_size_format(directory_size))
+    directory_sizes = [result[0] for result in results_list if result[2] is True]
+    directory_names = [result[1] for result in results_list if result[2] is True]
 
+    #Others
+    others_size = sum([result[0] for result in results_list if result[2] is False])
     directory_sizes.append(others_size)
-    names.append("Otros: " + get_size_format(others_size))
+    directory_names.append("Otros: " + get_size_format(others_size))
 
-    return (directory_sizes, names)
+    return (directory_sizes, directory_names)
